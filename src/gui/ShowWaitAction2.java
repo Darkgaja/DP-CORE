@@ -10,6 +10,7 @@ import java.io.File;
 
 import javax.swing.*;
 
+import parser.ClassObject;
 import parser.ProjectASTParser;
 import patterns.PatternDetectionAlgorithm;
 import patterns.Pattern;
@@ -30,24 +31,36 @@ public class ShowWaitAction2 extends AbstractAction {
 		SwingWorker<Void, Void> mySwingWorker = new SwingWorker<Void, Void>() {
 			@Override
 			protected Void doInBackground() throws Exception {
-				ProjectASTParser.parse(MainWindow.projectfolder);
-				File file = new File(MainWindow.patternfolder + File.separator + MainWindow.cb.getSelectedItem().toString()
-						+ ".pattern");
-				Pattern pat = MainWindow.extractPattern(file);
-				Boolean grouping;
-				if (MainWindow.grouping.isSelected())
-					grouping = true;
-				else
-					grouping = false;
-				String s = PatternDetectionAlgorithm.DetectPattern_Results(pat, grouping);
-				File fileEntry = new File(MainWindow.projectfolder);
-				String s2 = MainWindow.exportfolder + File.separator + "detect_" + MainWindow.cb.getSelectedItem().toString()
-						+ "_pattern_in_" + fileEntry.getName() + "_project" + ".txt";
-				File f = new File(s2);
-				MainWindow.createFile(s, f);
-				ProjectASTParser.Classes.clear();
-				PatternDetectionAlgorithm.clear();
-				return null;
+				try {
+					ProjectASTParser.parse(MainWindow.projectfolder);
+					File file = new File(MainWindow.patternfolder + File.separator + MainWindow.cb.getSelectedItem().toString()
+							+ ".pattern");
+					Pattern pat = MainWindow.extractPattern(file);
+					Boolean grouping;
+					if (MainWindow.grouping.isSelected())
+						grouping = true;
+					else
+						grouping = false;
+					String s = PatternDetectionAlgorithm.DetectPattern_Results(pat, grouping);
+					File fileEntry = new File(MainWindow.projectfolder);
+					String s2 = MainWindow.exportfolder + File.separator + "detect_" + MainWindow.cb.getSelectedItem().toString()
+							+ "_pattern_in_" + fileEntry.getName() + "_project" + ".txt";
+					File f = new File(s2);
+					MainWindow.createFile(s, f);
+					StringBuilder sb = new StringBuilder();
+					for (ClassObject cl : ProjectASTParser.getSortedClasses()) {
+						sb.append(cl.toString()).append("\n");
+					}
+					String s3 = MainWindow.exportfolder + File.separator + "detect_" + MainWindow.cb.getSelectedItem().toString()
+							+ "_classes" + ".txt";
+					File f3 = new File(s3);
+					MainWindow.createFile(sb.toString(), f3);
+					ProjectASTParser.Classes.clear();
+					PatternDetectionAlgorithm.clear();
+					return null;
+				} catch (Exception e) {
+					return null;
+				}
 			}
 		};
 

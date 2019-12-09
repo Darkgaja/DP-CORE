@@ -62,10 +62,11 @@ public class PatternCandidate {
 	 * @return a String containing the members of this PatternCandidate.
 	 */
 	public String candidatetoString() {
-		String s = "";
+		String s = "<Candidate Pattern=\"" + getPatternName() + "\">\n";
 		for (int i = 0; i < MemberCount; i++) {
-			s += MemberNames.get(i) + "(" + MemberAbilities.get(i) + "): " + Members.get(i).getName() + "\n";
+			s += "<Member Name=\"" + Members.get(i).getName() + "\"/>\n";
 		}
+		s += "</Candidate>\n";
 		return s;
 	}
 

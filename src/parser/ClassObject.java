@@ -177,6 +177,9 @@ public class ClassObject {
 	 * String should be representing a MethodInvocation of this ClassObject
 	 */
 	public void addMethodInvocation(String s) {
+		if (s.contains("(")) {
+			s = s.substring(0, s.indexOf('('));
+		}
 		MethodInvocations.add(s);
 	}
 
@@ -249,7 +252,32 @@ public class ClassObject {
 	 */
 	@Override
 	public String toString() {
-		return getName() + "(" + abstraction + ")";
+		StringBuilder sb = new StringBuilder();
+		sb.append("Class ").append(getName()).append("(").append(this.abstraction).append(")").append("\n");
+		sb.append("Modifier: ").append(Modifiers).append("\n");
+		sb.append("Variables:\n");
+		for (Variable var : Variables) {
+			sb.append(var.gettype()).append(" ").append(var.getName()).append("\n");
+		}
+		sb.append("Methods: \n");
+		for (Method method : Methods) {
+			sb.append(method.getReturntype()).append(" ").append(method.getName()).append("(");
+			for (String parameter : method.getInputtypes()) {
+				sb.append(parameter).append(", ");
+			}
+			sb.append(")\n");
+		}
+		sb.append("Invocations: \n");
+		for (String invokes : MethodInvocations) {
+			sb.append(invokes).append("\n");
+		}
+		sb.append("Connections: \n");
+		for (Connection con : connections) {
+			sb.append(con.getFrom().getName()).append(" - ").append(con.getTo().getName()).append(" ").append(con.getType()).append("\n");
+		}
+		
+		return sb.toString();
+		//return getName() + "(" + abstraction + ")";
 	}
 
 	// ------------------------------------ Uses ----------------------------------------
@@ -264,7 +292,9 @@ public class ClassObject {
 		for (Method m : Methods) {
 			if (!(GeneralMethods.isPrimitive(m.getReturntype()))) {
 				tempuse = new Connection(this, ProjectASTParser.Classes.get(m.getReturntype()), Type.uses);
-				connections.add(tempuse);
+				if (tempuse.getTo() != null) {
+					connections.add(tempuse);
+				}
 			}
 		}
 	}
@@ -275,7 +305,7 @@ public class ClassObject {
 	 */
 	public boolean uses(ClassObject c) {
 		for (Connection u : connections.getConnectionsByType(Type.uses)) {
-			if (u.getTo().equals(c))
+			if (u.getTo().getName().equals(c.getName()))
 				return true;
 		}
 		return false;
@@ -295,12 +325,16 @@ public class ClassObject {
 		Connection tempinh;
 		if (extending != null) {
 			tempinh = new Connection(this, ProjectASTParser.Classes.get(extending), Type.inherits);
-			connections.add(tempinh);
+			if (tempinh.getTo() != null) {
+				connections.add(tempinh);
+			}
 		}
 		for (String s : Implementing) {
 			if (s != null) {
 				tempinh = new Connection(this, ProjectASTParser.Classes.get(s), Type.inherits);
-				connections.add(tempinh);
+				if (tempinh.getTo() != null) {
+					connections.add(tempinh);
+				}
 			}
 		}
 
@@ -312,7 +346,7 @@ public class ClassObject {
 	 */
 	public boolean inherits(ClassObject c) {
 		for (Connection i : connections.getConnectionsByType(Type.inherits)) {
-			if (i.getTo().equals(c))
+			if (i.getTo().getName().equals(c.getName()))
 				return true;
 		}
 		return false;
@@ -344,7 +378,9 @@ public class ClassObject {
 				// If it is not duplicate (flag is 0)
 				if (flag == 0) {
 					temphas = new Connection(this, ProjectASTParser.Classes.get(s), Type.has);
-					connections.add(temphas);
+					if (temphas.getTo() != null) {
+						connections.add(temphas);
+					}
 				}
 			}
 		}
@@ -356,7 +392,7 @@ public class ClassObject {
 	 */
 	public boolean has(ClassObject c) {
 		for (Connection h : connections.getConnectionsByType(Type.has)) {
-			if (h.getTo().equals(c))
+			if (h.getTo().getName().equals(c.getName()))
 				return true;
 		}
 		return false;
@@ -379,13 +415,14 @@ public class ClassObject {
 		for (String s : MethodInvocations) {
 			words = s.split("\\.");
 			for (i = 0; i < words.length - 1; i++) {
+				String next = words[i + 1];
 				flag = 0;
 				for (Variable v : Variables) {
-					if (words[i].equals(v.getName())) {
+					if (words[i].equalsIgnoreCase(v.getName())) {
 						// this word is a variable, next should be its method
 						for (ClassObject c : ProjectASTParser.Classes.values()) {
 							for (Method m : c.getMethods()) {
-								if (words[i + 1].equals(m.getName()) && (v.gettype().equals(c.getName()))) {
+								if (next.equalsIgnoreCase(m.getName()) && (v.gettype().equalsIgnoreCase(c.getName()))) {
 									// Check for duplicates (one calls is enough)
 									for (Connection ca : connections.getConnectionsByType(Type.calls)) {
 										if (ca.getTo().getName().equalsIgnoreCase(c.getName()))
@@ -395,7 +432,9 @@ public class ClassObject {
 									// If it is not duplicate (flag is 0)
 									if (flag == 0) {
 										tempcall = new Connection(this, c, Type.calls);
-										connections.add(tempcall);
+										if (tempcall.getTo() != null) {
+											connections.add(tempcall);
+										}
 									}
 								}
 							}
@@ -414,7 +453,7 @@ public class ClassObject {
 	 */
 	public boolean calls(ClassObject c) {
 		for (Connection cll : connections.getConnectionsByType(Type.calls)) {
-			if (cll.getTo().equals(c))
+			if (cll.getTo().getName().equals(c.getName()))
 				return true;
 		}
 		return false;
@@ -445,7 +484,9 @@ public class ClassObject {
 				// If it is not duplicate (flag is 0)
 				if (flag == 0) {
 					tempcreate = new Connection(this, ProjectASTParser.Classes.get(s), Type.creates);
-					connections.add(tempcreate);
+					if (tempcreate.getTo() != null) {
+						connections.add(tempcreate);
+					}
 				}
 			}
 		}
@@ -458,7 +499,7 @@ public class ClassObject {
 	 */
 	public boolean creates(ClassObject c) {
 		for (Connection cr : connections.getConnectionsByType(Type.creates)) {
-			if (cr.getTo().equals(c))
+			if (cr.getTo().getName().equals(c.getName()))
 				return true;
 		}
 		return false;
@@ -490,7 +531,9 @@ public class ClassObject {
 					// If it is not duplicate (flag is 0)
 					if (flag == 0) {
 						tempref = new Connection(this, ProjectASTParser.Classes.get(s), Type.references);
-						connections.add(tempref);
+						if (tempref.getTo() != null) {
+							connections.add(tempref);
+						}
 					}
 				}
 			}
@@ -503,7 +546,7 @@ public class ClassObject {
 	 */
 	public boolean references(ClassObject c) {
 		for (Connection r : connections.getConnectionsByType(Type.references)) {
-			if (r.getTo().equals(c))
+			if (r.getTo().getName().equals(c.getName()))
 				return true;
 		}
 		return false;
@@ -512,7 +555,7 @@ public class ClassObject {
 
 	public boolean relates(ClassObject c) {
 		for (Connection r : connections) {
-			if (r.getTo().equals(c))
+			if (r.getTo().getName().equals(c.getName()))
 				return true;
 		}
 		return false;

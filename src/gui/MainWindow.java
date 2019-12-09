@@ -193,26 +193,35 @@ public class MainWindow extends JFrame {
 	 * Executes the application.
 	 * 
 	 * @param args optional arguments for executing in command line mode.
+	 * @throws IOException 
 	 */
-	public static void main(String args[]) {
+	public static void main(String args[]) throws IOException {
 		if (args.length > 0) {
-			String[] arguments = parseArgs(args);
+			String[] arguments = args;
 			String project = arguments[0];
-			String pattern = arguments[1];
-			boolean group = true;
-			if (!(project.length() > 0 && pattern.length() > 0))
+			String output = arguments[1];
+			String patternFolder = arguments[2];
+			ArrayList<File> patterns = new ArrayList<File>();
+			ProjectASTParser.find_files(patternFolder, patterns);
+			boolean group = false;
+			if (!(project.length() > 0 && patterns.size() > 0))
 				printHelpMessage();
 			else {
-				if (arguments[2].length() > 0 && !(arguments[2].equals("true") || arguments[2].equals("false")))
-					printHelpMessage();
-				else {
-					if (arguments[2].equals("true") || arguments[2].equals("false"))
-						group = Boolean.parseBoolean(arguments[2]);
-					ProjectASTParser.parse(project);
-					Pattern pat = MainWindow.extractPattern(new File(pattern));
+				ProjectASTParser.parse(project);
+				String projectName = project.substring(project.lastIndexOf("/") + 1);
+				String fileContent = "<Set Project=\"" + projectName + "\">";
+				for (File pattern : patterns) {
+					Pattern pat = MainWindow.extractPattern(pattern);
 					String s = PatternDetectionAlgorithm.DetectPattern_Results(pat, group);
-					System.out.println(s);
+					fileContent += s;
+					fileContent += "\n";
+					System.out.println("Success!");
 				}
+				fileContent += "</Set>";
+				String fileName = output + File.separator + projectName + File.separator + "dp-core.xml";
+				File outputFile = new File(fileName);
+				outputFile.getParentFile().mkdirs();
+				createFile(fileContent, outputFile);
 			}
 		} else {
 			// Set Cross Platform Java L&F

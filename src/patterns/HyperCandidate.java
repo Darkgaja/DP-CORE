@@ -151,7 +151,7 @@ public class HyperCandidate extends PatternCandidate {
 	 */
 	@Override
 	public String candidatetoString() {
-		String s = "";
+		String s = "<Candidate Pattern=\"" + getPatternName() + "\">";
 		for (int i = 0; i < MemberCount; i++) {
 			if (i != dissimilarity1 && i != dissimilarity2)
 				s += MemberNames.get(i) + "(" + MemberAbilities.get(i) + "): " + Members.get(i).getName() + "\n";

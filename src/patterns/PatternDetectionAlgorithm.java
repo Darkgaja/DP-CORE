@@ -403,11 +403,9 @@ public class PatternDetectionAlgorithm {
 	 * @return a string of the printed PatternCandidates detected.
 	 */
 	private static String PatternCandidates_inaString() {
-		String s;
-		s = "Amount of Candidates found: " + Candidates.size() + "\n";
+		String s = "";
 		for (PatternCandidate e : Candidates) {
 			s += "\n";
-			s += "Candidate of Pattern " + e.getPatternName() + ":\n";
 			s += e.candidatetoString();
 		}
 		return s;
@@ -419,13 +417,12 @@ public class PatternDetectionAlgorithm {
 	 * @return a string of the printed PatternCandidates detected.
 	 */
 	private static String HyperCandidates_inaString() {
-		String s;
-		s = "Amount of HyperCandidates found: " + TotalHyperCandidates.size() + "\n";
+		String s = "<Set>";
 		for (PatternCandidate e : TotalHyperCandidates) {
 			s += "\n";
-			s += "HyperCandidate of Pattern " + e.getPatternName() + ":\n";
 			s += e.candidatetoString();
 		}
+		s += "</Set>";
 		return s;
 	}
 
